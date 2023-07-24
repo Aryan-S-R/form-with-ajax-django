@@ -1,0 +1,94 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="{% static 'lib/js/jquery.min.js' %}"></script>
+    <script src="{% static 'lib/js/jquery.cookie.js' %}"></script>
+
+
+    <title>Document</title>
+</head>
+
+<body>
+
+    <input type="hidden" id="BookData" data-val="{{ all_adt }}">
+    <input type="hidden" id="SaveDataURL" data-url="{% url 'summa' %}">
+
+
+    <h1>Ajax and django project</h1>
+    <form action="javascript:void" method="post" id="userForm">
+        {% csrf_token %}
+        <label type="hidden" name="adt_id" id="adt_id" value="0">
+            <label for="Name"><b>Name</b></label>
+            <input type="text" id="name" placeholder="Enter your name"><br><br>
+            <label for="age"><b>Age</b></label>
+            <input type="number" id="age" placeholder="Enter your age"><br><br>
+            <label for="dept"><b>Department</b></label>
+            <input type="text" id="dept" placeholder="Enter your department"><br><br>
+            <button type="submit">Submit</button>
+    </form>
+    {% if success %}
+    <p>Congratulations! You are eligible.</p>
+    {% else %}
+    <p>Sorry, you are not eligible.</p>
+    {% if message %}
+    <p>Reason: {{ message }}</p>
+    {% endif %}
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Department</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ht in adt %}
+            <tr>
+                <td>{{ht.name}}</td>
+                <td>{{ht.age}}</td>
+                <td>{{ht.dept}}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+
+    </table>
+
+
+</body>
+<script>
+    $(document).ready(function () {
+        console.log("READY")
+        $(document).on('submit', "#userForm", function (e) {
+            e.preventDefault();
+
+            var userData = {
+                adt_id: $("#adt_id").val(),
+                name: $('#name').val(),
+                age: $('#age').val(),
+                dept: $('#dept').val(),
+            }
+
+            $.ajax({
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': $.cookie("csrftoken"),
+                    'Content-Type': 'application/json',
+                },
+                url: $("#SaveDataURL").data('url'),
+                data: JSON.stringify({ 'userData': userData }),
+                success: function (data) {
+                    console.log(data)
+                }
+            });
+        });
+    })
+</script>
+
+</html>
